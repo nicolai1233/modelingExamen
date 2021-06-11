@@ -1,0 +1,118 @@
+grammar org.xtext.example.ExameLanguage with org.eclipse.xtext.common.Terminals
+
+generate exameLanguage "http://www.xtext.org/example/ExameLanguage"
+
+X21:
+	'program' name=ID declaration+=Declaration*
+;
+
+Declaration:
+	Function|Input|Node|Stream|DataDecl|Parameter
+;
+
+Parameter:
+	{Para}'parameter' name=ID ':' type=Type
+;
+
+Type:
+	type=('int'|'string')|name=ID
+;
+
+DataDecl:
+	'data' name=ID '{' name1=ID ':' type=Type (',' name2=ID ':' type1=Type)* '}'
+;
+
+Stream:
+	'stream' name=ID (',' name1+=ID)* ('to'toElement+=ToElement*)+
+;
+
+
+Element:
+	name=ID|'[' (name1=ID|lambda=Lambda) ']' | 'output' out=ID
+;
+
+ToElement:
+	element=Element(',' element1+=Element)* 
+;
+
+Node:
+	'node' name=ID '[' (name1=[Function]|lambda=Lambda) ']'
+;
+
+Input:
+	'input' name=ID ':' type=Type
+;
+
+Function:
+	'function' name=ID lambda=Lambda
+;
+
+Lambda:
+	'(' name=ID ':' type=Type ')' '{' exp=MathExp '}'
+;
+
+MathExp:
+	exp=Exp
+;
+
+Exp returns Expresion:
+	exp1=ExpMin ( '+' {Plus.exp1=current} exp2=ExpMin)*
+	;
+
+ExpMin returns Expresion:
+	exp1=ExpMult ('-'{Minus.exp1=current} exp2 = ExpMult)*
+;
+
+
+ExpMult returns Expresion: 
+	exp1=ExpDiv ('*' {Mult.exp1=current} exp2=ExpDiv)*
+;
+
+ExpDiv returns Expresion: 
+	exp1=TextPrim ('/' {Div.exp1=current} exp2=TextPrim)*
+;
+
+TextPrim returns Expresion: 
+	Numbers | Parenthesis|VariableBinding|None|IfThen|New|Datatype
+;
+
+None:
+	type='none'
+;
+
+Numbers:	
+	value=INT
+;
+
+Datatype:
+	{Dataa}name=ID ('.' name2 = ID )*
+;
+
+Parenthesis:	
+  '(' exp=Exp ')'	
+;
+
+VariableBinding:
+  {Let} 'let' name=ID '=' binding=Exp 'in' body=Exp 'end'
+;
+
+LogicExp:
+	exp=Exp ('='|'<'|'>'|'<='|'>=') exp2=Exp
+;
+
+IfThen:
+	'if' logicExp=LogicExp 'then' exp1 = Exp 'else' exp2=Exp 'end'
+;
+
+
+New:
+	'new' name=ID '[' name1 =ID '=' exp=Exp (',' name2 =ID '=' exp2 = Exp)* ']'
+;
+
+
+
+
+
+
+
+
